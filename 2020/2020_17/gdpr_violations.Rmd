@@ -1,0 +1,41 @@
+```{r setup, include = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Loading
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(scales)
+theme_set(theme_light())
+
+gdpr_violations <- readr::read_tsv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-21/gdpr_violations.tsv') %>% 
+  mutate(date = mdy(date)) %>% 
+  rename(country = name)
+
+gdpr_text <- readr::read_tsv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-21/gdpr_text.tsv')
+
+```
+
+```{r}
+gdpr_violations %>%
+  count(country = fct_lump(country, 6, w = price),
+        sort = TRUE, wt = price, name = "total_price") %>% 
+  mutate(country = fct_reorder(country, total_price)) %>% 
+  ggplot(aes(total_price, country)) +
+  geom_col() +
+  scale_x_continuous(labels = dollar_format())
+  
+```
+
+```{r}
+gdpr_violations %>% 
+  count(month = floor_date(date, "month"),
+        sort = TRUE, wt = price, name = "total_price") %>% 
+  ggplot(aes(month, total_price)) +
+  geom_col()
+```
+
