@@ -1,0 +1,36 @@
+
+
+```{r setup}
+library(tidytuesdayR)
+library(tidyverse)
+if (!require('scales')) install.packages('scales'); library('scales')
+
+tuesdata <- tidytuesdayR::tt_load(2021, week = 41)
+
+nurses <- tuesdata$nurses
+
+glimpse(nurses)
+```
+
+```{r general magnitude}
+
+nurses %>% 
+#  filter(State == "Washington") %>% 
+  arrange(State, Year) %>% 
+  group_by(State) %>% 
+  mutate(direction = (`Total Employed RN` - lag(`Total Employed RN`) > 1),
+         xend = lag(Year),
+         yend = lag(`Total Employed RN`)) %>% 
+  ungroup() %>% 
+  dplyr::select(State, `Total Employed RN`, direction, Year, xend, yend) %>%
+  filter(!is.na(direction)) %>% 
+  ggplot(aes(x = Year, y = `Total Employed RN`, group = State)) +
+  geom_segment(aes(color = direction, xend = xend, yend = yend)) +
+  theme_minimal() +
+  theme(axis.title = element_blank(),
+        legend.position = "None") +
+  labs(title = "Evolution des effectifs par état") +
+  scale_color_manual(values = c("TRUE" = "grey", "FALSE" = "red"))
+
+```
+
